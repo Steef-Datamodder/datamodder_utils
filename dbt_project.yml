@@ -18,6 +18,12 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
+on-run-start:
+  - "{{ log_dbt_start() }}"
+
+on-run-end:
+  - "{{ log_dbt_end() }}"
+
 clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
@@ -32,4 +38,17 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   compare_wh:
     staging:
-      +materialized: view
+      +materialized: table
+
+      tpcds_sf100tcl:
+        +enabled: false
+      tpch_sf1:
+        +enabled: true
+      tpcds_sf10tcl:
+        +enabled: false
+      tpch_sf10:
+        +enabled: false
+      tpch_sf100:
+        +enabled: false
+      tpch_sf1000:
+        +enabled: false

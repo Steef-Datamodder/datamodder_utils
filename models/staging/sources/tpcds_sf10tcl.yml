@@ -1,0 +1,906 @@
+version: 1 
+ 
+sources: 
+ 
+  - name: tpcds_sf10tcl
+    database: snowflake_sample_data
+    schema: tpcds_sf10tcl
+    tables:
+      - name: call_center
+        columns:
+          - name: cc_call_center_sk
+            data_type: number
+          - name: cc_call_center_id
+            data_type: text
+          - name: cc_rec_start_date
+            data_type: date
+          - name: cc_rec_end_date
+            data_type: date
+          - name: cc_closed_date_sk
+            data_type: number
+          - name: cc_open_date_sk
+            data_type: number
+          - name: cc_name
+            data_type: text
+          - name: cc_class
+            data_type: text
+          - name: cc_employees
+            data_type: number
+          - name: cc_sq_ft
+            data_type: number
+          - name: cc_hours
+            data_type: text
+          - name: cc_manager
+            data_type: text
+          - name: cc_mkt_id
+            data_type: number
+          - name: cc_mkt_class
+            data_type: text
+          - name: cc_mkt_desc
+            data_type: text
+          - name: cc_market_manager
+            data_type: text
+          - name: cc_division
+            data_type: number
+          - name: cc_division_name
+            data_type: text
+          - name: cc_company
+            data_type: number
+          - name: cc_company_name
+            data_type: text
+          - name: cc_street_number
+            data_type: text
+          - name: cc_street_name
+            data_type: text
+          - name: cc_street_type
+            data_type: text
+          - name: cc_suite_number
+            data_type: text
+          - name: cc_city
+            data_type: text
+          - name: cc_county
+            data_type: text
+          - name: cc_state
+            data_type: text
+          - name: cc_zip
+            data_type: text
+          - name: cc_country
+            data_type: text
+          - name: cc_gmt_offset
+            data_type: number
+          - name: cc_tax_percentage
+            data_type: number
+      - name: catalog_page
+        columns:
+          - name: cp_catalog_page_sk
+            data_type: number
+          - name: cp_catalog_page_id
+            data_type: text
+          - name: cp_start_date_sk
+            data_type: number
+          - name: cp_end_date_sk
+            data_type: number
+          - name: cp_department
+            data_type: text
+          - name: cp_catalog_number
+            data_type: number
+          - name: cp_catalog_page_number
+            data_type: number
+          - name: cp_description
+            data_type: text
+          - name: cp_type
+            data_type: text
+      - name: catalog_returns
+        columns:
+          - name: cr_returned_date_sk
+            data_type: number
+          - name: cr_returned_time_sk
+            data_type: number
+          - name: cr_item_sk
+            data_type: number
+          - name: cr_refunded_customer_sk
+            data_type: number
+          - name: cr_refunded_cdemo_sk
+            data_type: number
+          - name: cr_refunded_hdemo_sk
+            data_type: number
+          - name: cr_refunded_addr_sk
+            data_type: number
+          - name: cr_returning_customer_sk
+            data_type: number
+          - name: cr_returning_cdemo_sk
+            data_type: number
+          - name: cr_returning_hdemo_sk
+            data_type: number
+          - name: cr_returning_addr_sk
+            data_type: number
+          - name: cr_call_center_sk
+            data_type: number
+          - name: cr_catalog_page_sk
+            data_type: number
+          - name: cr_ship_mode_sk
+            data_type: number
+          - name: cr_warehouse_sk
+            data_type: number
+          - name: cr_reason_sk
+            data_type: number
+          - name: cr_order_number
+            data_type: number
+          - name: cr_return_quantity
+            data_type: number
+          - name: cr_return_amount
+            data_type: number
+          - name: cr_return_tax
+            data_type: number
+          - name: cr_return_amt_inc_tax
+            data_type: number
+          - name: cr_fee
+            data_type: number
+          - name: cr_return_ship_cost
+            data_type: number
+          - name: cr_refunded_cash
+            data_type: number
+          - name: cr_reversed_charge
+            data_type: number
+          - name: cr_store_credit
+            data_type: number
+          - name: cr_net_loss
+            data_type: number
+      - name: catalog_sales
+        columns:
+          - name: cs_sold_date_sk
+            data_type: number
+          - name: cs_sold_time_sk
+            data_type: number
+          - name: cs_ship_date_sk
+            data_type: number
+          - name: cs_bill_customer_sk
+            data_type: number
+          - name: cs_bill_cdemo_sk
+            data_type: number
+          - name: cs_bill_hdemo_sk
+            data_type: number
+          - name: cs_bill_addr_sk
+            data_type: number
+          - name: cs_ship_customer_sk
+            data_type: number
+          - name: cs_ship_cdemo_sk
+            data_type: number
+          - name: cs_ship_hdemo_sk
+            data_type: number
+          - name: cs_ship_addr_sk
+            data_type: number
+          - name: cs_call_center_sk
+            data_type: number
+          - name: cs_catalog_page_sk
+            data_type: number
+          - name: cs_ship_mode_sk
+            data_type: number
+          - name: cs_warehouse_sk
+            data_type: number
+          - name: cs_item_sk
+            data_type: number
+          - name: cs_promo_sk
+            data_type: number
+          - name: cs_order_number
+            data_type: number
+          - name: cs_quantity
+            data_type: number
+          - name: cs_wholesale_cost
+            data_type: number
+          - name: cs_list_price
+            data_type: number
+          - name: cs_sales_price
+            data_type: number
+          - name: cs_ext_discount_amt
+            data_type: number
+          - name: cs_ext_sales_price
+            data_type: number
+          - name: cs_ext_wholesale_cost
+            data_type: number
+          - name: cs_ext_list_price
+            data_type: number
+          - name: cs_ext_tax
+            data_type: number
+          - name: cs_coupon_amt
+            data_type: number
+          - name: cs_ext_ship_cost
+            data_type: number
+          - name: cs_net_paid
+            data_type: number
+          - name: cs_net_paid_inc_tax
+            data_type: number
+          - name: cs_net_paid_inc_ship
+            data_type: number
+          - name: cs_net_paid_inc_ship_tax
+            data_type: number
+          - name: cs_net_profit
+            data_type: number
+      - name: customer
+        columns:
+          - name: c_customer_sk
+            data_type: number
+          - name: c_customer_id
+            data_type: text
+          - name: c_current_cdemo_sk
+            data_type: number
+          - name: c_current_hdemo_sk
+            data_type: number
+          - name: c_current_addr_sk
+            data_type: number
+          - name: c_first_shipto_date_sk
+            data_type: number
+          - name: c_first_sales_date_sk
+            data_type: number
+          - name: c_salutation
+            data_type: text
+          - name: c_first_name
+            data_type: text
+          - name: c_last_name
+            data_type: text
+          - name: c_preferred_cust_flag
+            data_type: text
+          - name: c_birth_day
+            data_type: number
+          - name: c_birth_month
+            data_type: number
+          - name: c_birth_year
+            data_type: number
+          - name: c_birth_country
+            data_type: text
+          - name: c_login
+            data_type: text
+          - name: c_email_address
+            data_type: text
+          - name: c_last_review_date
+            data_type: text
+      - name: customer_address
+        columns:
+          - name: ca_address_sk
+            data_type: number
+          - name: ca_address_id
+            data_type: text
+          - name: ca_street_number
+            data_type: text
+          - name: ca_street_name
+            data_type: text
+          - name: ca_street_type
+            data_type: text
+          - name: ca_suite_number
+            data_type: text
+          - name: ca_city
+            data_type: text
+          - name: ca_county
+            data_type: text
+          - name: ca_state
+            data_type: text
+          - name: ca_zip
+            data_type: text
+          - name: ca_country
+            data_type: text
+          - name: ca_gmt_offset
+            data_type: number
+          - name: ca_location_type
+            data_type: text
+      - name: customer_demographics
+        columns:
+          - name: cd_demo_sk
+            data_type: number
+          - name: cd_gender
+            data_type: text
+          - name: cd_marital_status
+            data_type: text
+          - name: cd_education_status
+            data_type: text
+          - name: cd_purchase_estimate
+            data_type: number
+          - name: cd_credit_rating
+            data_type: text
+          - name: cd_dep_count
+            data_type: number
+          - name: cd_dep_employed_count
+            data_type: number
+          - name: cd_dep_college_count
+            data_type: number
+      - name: date_dim
+        columns:
+          - name: d_date_sk
+            data_type: number
+          - name: d_date_id
+            data_type: text
+          - name: d_date
+            data_type: date
+          - name: d_month_seq
+            data_type: number
+          - name: d_week_seq
+            data_type: number
+          - name: d_quarter_seq
+            data_type: number
+          - name: d_year
+            data_type: number
+          - name: d_dow
+            data_type: number
+          - name: d_moy
+            data_type: number
+          - name: d_dom
+            data_type: number
+          - name: d_qoy
+            data_type: number
+          - name: d_fy_year
+            data_type: number
+          - name: d_fy_quarter_seq
+            data_type: number
+          - name: d_fy_week_seq
+            data_type: number
+          - name: d_day_name
+            data_type: text
+          - name: d_quarter_name
+            data_type: text
+          - name: d_holiday
+            data_type: text
+          - name: d_weekend
+            data_type: text
+          - name: d_following_holiday
+            data_type: text
+          - name: d_first_dom
+            data_type: number
+          - name: d_last_dom
+            data_type: number
+          - name: d_same_day_ly
+            data_type: number
+          - name: d_same_day_lq
+            data_type: number
+          - name: d_current_day
+            data_type: text
+          - name: d_current_week
+            data_type: text
+          - name: d_current_month
+            data_type: text
+          - name: d_current_quarter
+            data_type: text
+          - name: d_current_year
+            data_type: text
+      - name: household_demographics
+        columns:
+          - name: hd_demo_sk
+            data_type: number
+          - name: hd_income_band_sk
+            data_type: number
+          - name: hd_buy_potential
+            data_type: text
+          - name: hd_dep_count
+            data_type: number
+          - name: hd_vehicle_count
+            data_type: number
+      - name: income_band
+        columns:
+          - name: ib_income_band_sk
+            data_type: number
+          - name: ib_lower_bound
+            data_type: number
+          - name: ib_upper_bound
+            data_type: number
+      - name: inventory
+        columns:
+          - name: inv_date_sk
+            data_type: number
+          - name: inv_item_sk
+            data_type: number
+          - name: inv_warehouse_sk
+            data_type: number
+          - name: inv_quantity_on_hand
+            data_type: number
+      - name: item
+        columns:
+          - name: i_item_sk
+            data_type: number
+          - name: i_item_id
+            data_type: text
+          - name: i_rec_start_date
+            data_type: date
+          - name: i_rec_end_date
+            data_type: date
+          - name: i_item_desc
+            data_type: text
+          - name: i_current_price
+            data_type: number
+          - name: i_wholesale_cost
+            data_type: number
+          - name: i_brand_id
+            data_type: number
+          - name: i_brand
+            data_type: text
+          - name: i_class_id
+            data_type: number
+          - name: i_class
+            data_type: text
+          - name: i_category_id
+            data_type: number
+          - name: i_category
+            data_type: text
+          - name: i_manufact_id
+            data_type: number
+          - name: i_manufact
+            data_type: text
+          - name: i_size
+            data_type: text
+          - name: i_formulation
+            data_type: text
+          - name: i_color
+            data_type: text
+          - name: i_units
+            data_type: text
+          - name: i_container
+            data_type: text
+          - name: i_manager_id
+            data_type: number
+          - name: i_product_name
+            data_type: text
+      - name: promotion
+        columns:
+          - name: p_promo_sk
+            data_type: number
+          - name: p_promo_id
+            data_type: text
+          - name: p_start_date_sk
+            data_type: number
+          - name: p_end_date_sk
+            data_type: number
+          - name: p_item_sk
+            data_type: number
+          - name: p_cost
+            data_type: number
+          - name: p_response_target
+            data_type: number
+          - name: p_promo_name
+            data_type: text
+          - name: p_channel_dmail
+            data_type: text
+          - name: p_channel_email
+            data_type: text
+          - name: p_channel_catalog
+            data_type: text
+          - name: p_channel_tv
+            data_type: text
+          - name: p_channel_radio
+            data_type: text
+          - name: p_channel_press
+            data_type: text
+          - name: p_channel_event
+            data_type: text
+          - name: p_channel_demo
+            data_type: text
+          - name: p_channel_details
+            data_type: text
+          - name: p_purpose
+            data_type: text
+          - name: p_discount_active
+            data_type: text
+      - name: reason
+        columns:
+          - name: r_reason_sk
+            data_type: number
+          - name: r_reason_id
+            data_type: text
+          - name: r_reason_desc
+            data_type: text
+      - name: ship_mode
+        columns:
+          - name: sm_ship_mode_sk
+            data_type: number
+          - name: sm_ship_mode_id
+            data_type: text
+          - name: sm_type
+            data_type: text
+          - name: sm_code
+            data_type: text
+          - name: sm_carrier
+            data_type: text
+          - name: sm_contract
+            data_type: text
+      - name: store
+        columns:
+          - name: s_store_sk
+            data_type: number
+          - name: s_store_id
+            data_type: text
+          - name: s_rec_start_date
+            data_type: date
+          - name: s_rec_end_date
+            data_type: date
+          - name: s_closed_date_sk
+            data_type: number
+          - name: s_store_name
+            data_type: text
+          - name: s_number_employees
+            data_type: number
+          - name: s_floor_space
+            data_type: number
+          - name: s_hours
+            data_type: text
+          - name: s_manager
+            data_type: text
+          - name: s_market_id
+            data_type: number
+          - name: s_geography_class
+            data_type: text
+          - name: s_market_desc
+            data_type: text
+          - name: s_market_manager
+            data_type: text
+          - name: s_division_id
+            data_type: number
+          - name: s_division_name
+            data_type: text
+          - name: s_company_id
+            data_type: number
+          - name: s_company_name
+            data_type: text
+          - name: s_street_number
+            data_type: text
+          - name: s_street_name
+            data_type: text
+          - name: s_street_type
+            data_type: text
+          - name: s_suite_number
+            data_type: text
+          - name: s_city
+            data_type: text
+          - name: s_county
+            data_type: text
+          - name: s_state
+            data_type: text
+          - name: s_zip
+            data_type: text
+          - name: s_country
+            data_type: text
+          - name: s_gmt_offset
+            data_type: number
+          - name: s_tax_precentage
+            data_type: number
+      - name: store_returns
+        columns:
+          - name: sr_returned_date_sk
+            data_type: number
+          - name: sr_return_time_sk
+            data_type: number
+          - name: sr_item_sk
+            data_type: number
+          - name: sr_customer_sk
+            data_type: number
+          - name: sr_cdemo_sk
+            data_type: number
+          - name: sr_hdemo_sk
+            data_type: number
+          - name: sr_addr_sk
+            data_type: number
+          - name: sr_store_sk
+            data_type: number
+          - name: sr_reason_sk
+            data_type: number
+          - name: sr_ticket_number
+            data_type: number
+          - name: sr_return_quantity
+            data_type: number
+          - name: sr_return_amt
+            data_type: number
+          - name: sr_return_tax
+            data_type: number
+          - name: sr_return_amt_inc_tax
+            data_type: number
+          - name: sr_fee
+            data_type: number
+          - name: sr_return_ship_cost
+            data_type: number
+          - name: sr_refunded_cash
+            data_type: number
+          - name: sr_reversed_charge
+            data_type: number
+          - name: sr_store_credit
+            data_type: number
+          - name: sr_net_loss
+            data_type: number
+      - name: store_sales
+        columns:
+          - name: ss_sold_date_sk
+            data_type: number
+          - name: ss_sold_time_sk
+            data_type: number
+          - name: ss_item_sk
+            data_type: number
+          - name: ss_customer_sk
+            data_type: number
+          - name: ss_cdemo_sk
+            data_type: number
+          - name: ss_hdemo_sk
+            data_type: number
+          - name: ss_addr_sk
+            data_type: number
+          - name: ss_store_sk
+            data_type: number
+          - name: ss_promo_sk
+            data_type: number
+          - name: ss_ticket_number
+            data_type: number
+          - name: ss_quantity
+            data_type: number
+          - name: ss_wholesale_cost
+            data_type: number
+          - name: ss_list_price
+            data_type: number
+          - name: ss_sales_price
+            data_type: number
+          - name: ss_ext_discount_amt
+            data_type: number
+          - name: ss_ext_sales_price
+            data_type: number
+          - name: ss_ext_wholesale_cost
+            data_type: number
+          - name: ss_ext_list_price
+            data_type: number
+          - name: ss_ext_tax
+            data_type: number
+          - name: ss_coupon_amt
+            data_type: number
+          - name: ss_net_paid
+            data_type: number
+          - name: ss_net_paid_inc_tax
+            data_type: number
+          - name: ss_net_profit
+            data_type: number
+      - name: time_dim
+        columns:
+          - name: t_time_sk
+            data_type: number
+          - name: t_time_id
+            data_type: text
+          - name: t_time
+            data_type: number
+          - name: t_hour
+            data_type: number
+          - name: t_minute
+            data_type: number
+          - name: t_second
+            data_type: number
+          - name: t_am_pm
+            data_type: text
+          - name: t_shift
+            data_type: text
+          - name: t_sub_shift
+            data_type: text
+          - name: t_meal_time
+            data_type: text
+      - name: warehouse
+        columns:
+          - name: w_warehouse_sk
+            data_type: number
+          - name: w_warehouse_id
+            data_type: text
+          - name: w_warehouse_name
+            data_type: text
+          - name: w_warehouse_sq_ft
+            data_type: number
+          - name: w_street_number
+            data_type: text
+          - name: w_street_name
+            data_type: text
+          - name: w_street_type
+            data_type: text
+          - name: w_suite_number
+            data_type: text
+          - name: w_city
+            data_type: text
+          - name: w_county
+            data_type: text
+          - name: w_state
+            data_type: text
+          - name: w_zip
+            data_type: text
+          - name: w_country
+            data_type: text
+          - name: w_gmt_offset
+            data_type: number
+      - name: web_page
+        columns:
+          - name: wp_web_page_sk
+            data_type: number
+          - name: wp_web_page_id
+            data_type: text
+          - name: wp_rec_start_date
+            data_type: date
+          - name: wp_rec_end_date
+            data_type: date
+          - name: wp_creation_date_sk
+            data_type: number
+          - name: wp_access_date_sk
+            data_type: number
+          - name: wp_autogen_flag
+            data_type: text
+          - name: wp_customer_sk
+            data_type: number
+          - name: wp_url
+            data_type: text
+          - name: wp_type
+            data_type: text
+          - name: wp_char_count
+            data_type: number
+          - name: wp_link_count
+            data_type: number
+          - name: wp_image_count
+            data_type: number
+          - name: wp_max_ad_count
+            data_type: number
+      - name: web_returns
+        columns:
+          - name: wr_returned_date_sk
+            data_type: number
+          - name: wr_returned_time_sk
+            data_type: number
+          - name: wr_item_sk
+            data_type: number
+          - name: wr_refunded_customer_sk
+            data_type: number
+          - name: wr_refunded_cdemo_sk
+            data_type: number
+          - name: wr_refunded_hdemo_sk
+            data_type: number
+          - name: wr_refunded_addr_sk
+            data_type: number
+          - name: wr_returning_customer_sk
+            data_type: number
+          - name: wr_returning_cdemo_sk
+            data_type: number
+          - name: wr_returning_hdemo_sk
+            data_type: number
+          - name: wr_returning_addr_sk
+            data_type: number
+          - name: wr_web_page_sk
+            data_type: number
+          - name: wr_reason_sk
+            data_type: number
+          - name: wr_order_number
+            data_type: number
+          - name: wr_return_quantity
+            data_type: number
+          - name: wr_return_amt
+            data_type: number
+          - name: wr_return_tax
+            data_type: number
+          - name: wr_return_amt_inc_tax
+            data_type: number
+          - name: wr_fee
+            data_type: number
+          - name: wr_return_ship_cost
+            data_type: number
+          - name: wr_refunded_cash
+            data_type: number
+          - name: wr_reversed_charge
+            data_type: number
+          - name: wr_account_credit
+            data_type: number
+          - name: wr_net_loss
+            data_type: number
+      - name: web_sales
+        columns:
+          - name: ws_sold_date_sk
+            data_type: number
+          - name: ws_sold_time_sk
+            data_type: number
+          - name: ws_ship_date_sk
+            data_type: number
+          - name: ws_item_sk
+            data_type: number
+          - name: ws_bill_customer_sk
+            data_type: number
+          - name: ws_bill_cdemo_sk
+            data_type: number
+          - name: ws_bill_hdemo_sk
+            data_type: number
+          - name: ws_bill_addr_sk
+            data_type: number
+          - name: ws_ship_customer_sk
+            data_type: number
+          - name: ws_ship_cdemo_sk
+            data_type: number
+          - name: ws_ship_hdemo_sk
+            data_type: number
+          - name: ws_ship_addr_sk
+            data_type: number
+          - name: ws_web_page_sk
+            data_type: number
+          - name: ws_web_site_sk
+            data_type: number
+          - name: ws_ship_mode_sk
+            data_type: number
+          - name: ws_warehouse_sk
+            data_type: number
+          - name: ws_promo_sk
+            data_type: number
+          - name: ws_order_number
+            data_type: number
+          - name: ws_quantity
+            data_type: number
+          - name: ws_wholesale_cost
+            data_type: number
+          - name: ws_list_price
+            data_type: number
+          - name: ws_sales_price
+            data_type: number
+          - name: ws_ext_discount_amt
+            data_type: number
+          - name: ws_ext_sales_price
+            data_type: number
+          - name: ws_ext_wholesale_cost
+            data_type: number
+          - name: ws_ext_list_price
+            data_type: number
+          - name: ws_ext_tax
+            data_type: number
+          - name: ws_coupon_amt
+            data_type: number
+          - name: ws_ext_ship_cost
+            data_type: number
+          - name: ws_net_paid
+            data_type: number
+          - name: ws_net_paid_inc_tax
+            data_type: number
+          - name: ws_net_paid_inc_ship
+            data_type: number
+          - name: ws_net_paid_inc_ship_tax
+            data_type: number
+          - name: ws_net_profit
+            data_type: number
+      - name: web_site
+        columns:
+          - name: web_site_sk
+            data_type: number
+          - name: web_site_id
+            data_type: text
+          - name: web_rec_start_date
+            data_type: date
+          - name: web_rec_end_date
+            data_type: date
+          - name: web_name
+            data_type: text
+          - name: web_open_date_sk
+            data_type: number
+          - name: web_close_date_sk
+            data_type: number
+          - name: web_class
+            data_type: text
+          - name: web_manager
+            data_type: text
+          - name: web_mkt_id
+            data_type: number
+          - name: web_mkt_class
+            data_type: text
+          - name: web_mkt_desc
+            data_type: text
+          - name: web_market_manager
+            data_type: text
+          - name: web_company_id
+            data_type: number
+          - name: web_company_name
+            data_type: text
+          - name: web_street_number
+            data_type: text
+          - name: web_street_name
+            data_type: text
+          - name: web_street_type
+            data_type: text
+          - name: web_suite_number
+            data_type: text
+          - name: web_city
+            data_type: text
+          - name: web_county
+            data_type: text
+          - name: web_state
+            data_type: text
+          - name: web_zip
+            data_type: text
+          - name: web_country
+            data_type: text
+          - name: web_gmt_offset
+            data_type: number
+          - name: web_tax_percentage
+            data_type: number
