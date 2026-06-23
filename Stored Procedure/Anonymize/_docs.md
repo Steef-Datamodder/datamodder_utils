@@ -6,52 +6,24 @@ Snowflake stored procedure that anonymizes personal data and other sensitive col
 
 ## Deployment
 
-Run once from the `datamodder_utils` directory:
+Run once, in order:
 
-```bash
-dbt run-operation create_anonymize_sp
-```
-
-This does three things:
-1. Creates the `datamodder` schema if it does not exist
-2. Creates the test table `datamodder.test_anonymize_customer` (100 rows from Snowflake sample data)
-3. Creates the stored procedure `datamodder.anonymize`
-
-The schema is configurable via `dbt_project.yml`:
-
-```yaml
-vars:
-  datamodder_schema: datamodder  # default
-```
+1. Run `setup.sql` as ACCOUNTADMIN — creates the database, role, and `datamodder` schema.
+2. Open `create_anonymize_sp.sql`, set `MY_DATABASE` and `MY_WAREHOUSE` at the top, and run it in DBeaver or the Snowflake UI.
 
 ---
 
 ## Calling the procedure
 
-### Directly in DBeaver or Snowflake UI
-
 ```sql
-call compare_wh.datamodder.anonymize(
-    'compare_wh.myschema.mytable',   -- fully qualified table name
-    'id',                             -- primary key column
+call datamodder.anonymize(
+    'myschema.mytable',   -- fully qualified table name (database optional if USE DATABASE is set)
+    'id',                 -- primary key column
     parse_json('[
-        { "column": "naam",  "method": "shuffle" },
+        { "column": "naam",  "method": "shuffle_name" },
         { "column": "email", "method": "random_string", "pattern": "aaaa##@aaaa.nl" }
     ]')
 );
-```
-
-### From dbt (via wrapper macro)
-
-```sql
-{{ anonymize_wrapper(
-    'compare_wh.myschema.mytable',
-    'id',
-    [
-        { "column": "naam",  "method": "shuffle" },
-        { "column": "email", "method": "random_string", "pattern": "aaaa##@aaaa.nl" }
-    ]
-) }}
 ```
 
 ---
@@ -140,7 +112,7 @@ Fills each row with a random value drawn from a specified column in another tabl
 {
     "column": "categorie",
     "method": "random_lookup",
-    "source": "compare_wh.datamodder.abc",
+    "source": "datamodder.abc",
     "source_column": "xyz",
     "uniform": true
 }
@@ -151,7 +123,7 @@ Fills each row with a random value drawn from a specified column in another tabl
 {
     "column": "segment",
     "method": "random_lookup",
-    "source": "compare_wh.datamodder.abc",
+    "source": "datamodder.abc",
     "source_column": "xyz",
     "uniform": false
 }
@@ -173,19 +145,6 @@ Shuffles full name strings by splitting each name into a first name part and a l
 { "column": "naam", "method": "shuffle_name" }
 ```
 
-**Parsing rules (applied in order):**
-
-| Situation | Example | Result |
-|-----------|---------|--------|
-| Two words, no infix | `Anna Smit` | voornaam: `Anna`, achternaam: `Smit` |
-| Infix between words | `Jan de Vries` | voornaam: `Jan`, achternaam: `de Vries` |
-| Multi-word infix | `Jan van den Berg` | voornaam: `Jan`, achternaam: `van den Berg` |
-| Multiple voornamen | `Pieter Jan van Boven` | voornaam: `Pieter Jan`, achternaam: `van Boven` |
-| No infix, 3+ words | `John Michael Jordan` | voornaam: `John`, achternaam: `Jordan` (middle discarded) |
-| Initial + infix | `J. de Vries` | voornaam: `J.`, achternaam: `de Vries` |
-| Initial without dot | `J de Vries` | voornaam: `J.` (dot added), achternaam: `de Vries` |
-| Non-Dutch infix | `Youssef el Amrani` | voornaam: `Youssef`, achternaam: `el Amrani` |
-
 **Example output:**
 
 | naam_before | naam_after |
@@ -198,7 +157,40 @@ Shuffles full name strings by splitting each name into a first name part and a l
 
 > Voornamen and last name parts are shuffled within separate pools, independently of each other. It is therefore possible for a Dutch voornaam to end up with an Arabic infix — this is intentional, as the goal is anonymization, not name plausibility.
 
-**Supported infix languages:** Dutch, German, French, Italian/Spanish, Arabic/Berber, Irish/Scottish, Scandinavian. See `name_parsing.md` for the full list.
+#### Name parsing rules
+
+Names are split into a first name part and a last name part before shuffling. The following rules apply, in order:
+
+| Situation | Example | Result |
+|-----------|---------|--------|
+| Two words, no infix | `Anna Smit` | voornaam: `Anna`, achternaam: `Smit` |
+| Infix between words | `Jan de Vries` | voornaam: `Jan`, achternaam: `de Vries` |
+| Multi-word infix | `Jan van den Berg` | voornaam: `Jan`, achternaam: `van den Berg` |
+| Multiple voornamen before infix | `Pieter Jan van Boven` | voornaam: `Pieter Jan`, achternaam: `van Boven` |
+| No infix, 3+ words | `John Michael Jordan` | voornaam: `John`, achternaam: `Jordan` (middle discarded) |
+| Hyphenated name | `Jan-Pieter van den Berg` | voornaam: `Jan-Pieter`, achternaam: `van den Berg` |
+| Initial with dot | `J. de Vries` | voornaam: `J.`, achternaam: `de Vries` |
+| Initial without dot | `J de Vries` | voornaam: `J.` (dot added), achternaam: `de Vries` |
+| Apostrophe in word | `Patrick O'Brien` | voornaam: `Patrick`, achternaam: `O'Brien` |
+| Non-Dutch infix | `Youssef el Amrani` | voornaam: `Youssef`, achternaam: `el Amrani` |
+
+**Casing:** names are not normalized — the original casing from the source data is preserved.
+
+**Non-Western names:** supported if they follow Western naming order (first name first). East Asian naming order (family name first) is out of scope.
+
+#### Infix list
+
+Infixes are matched longest-first to avoid partial matches (e.g. `van den` is tried before `van`).
+
+| Language group | Infixes |
+|----------------|---------|
+| Dutch | `van den`, `van der`, `van de`, `van het`, `van op`, `in den`, `in de`, `in het`, `op den`, `op de`, `op het`, `van`, `de`, `den`, `der`, `het`, `in`, `op`, `te`, `ter`, `ten`, `bij`, `over`, `onder`, `voor`, `aan`, `uit`, `tot`, `d'` |
+| German / Austrian | `von und zu`, `von`, `zu` |
+| French / Belgian | `de la`, `de los`, `de las`, `du`, `des`, `le`, `la`, `l'` |
+| Italian / Spanish | `della`, `degli`, `delle`, `dalla`, `dal`, `del`, `di` |
+| Arabic / Berber | `bint`, `ould`, `bou`, `bin`, `ben`, `el`, `al`, `ou` |
+| Irish / Scottish | `mac`, `mc`, `o'`, `m'` |
+| Scandinavian | `af` |
 
 ---
 
@@ -240,7 +232,7 @@ Here `huisnummer` is first shuffled as part of the address group, then shifted i
 
 ## Testing
 
-Open `test_anonymize_sp.sql` in DBeaver and run the entire script. It:
+Open `test_anonymize_sp.sql` in DBeaver, set `MY_DATABASE` and `MY_WAREHOUSE` at the top, and run the entire script. It:
 
 1. Recreates the lookup table `datamodder.abc` (fruit)
 2. Recreates the test table `datamodder.test_anonymize` with 10 rows
