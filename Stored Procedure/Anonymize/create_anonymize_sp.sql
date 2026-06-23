@@ -1,15 +1,8 @@
-{% macro create_anonymizer_sp() %}
-{% if execute %}
-{%- set schema_ref = target.database ~ '.' ~ _datamodder_schema() -%}
-{%- set test_table_sql %}
-    create table if not exists {{ schema_ref }}.test_anonymize_customer as
-    select *
-    from snowflake_sample_data.tpch_sf1.customer
-    limit 100
-{%- endset -%}
-{%- do run_query(test_table_sql) -%}
-{%- set sql %}
-create or replace procedure {{ schema_ref }}.anonymize(table_name varchar, pk varchar, columns variant)
+use role dbt_role;
+use warehouse MY_WAREHOUSE;  -- change to your warehouse
+use database MY_DATABASE;    -- change to your database
+
+create or replace procedure datamodder.anonymize(table_name varchar, pk varchar, columns variant)
 returns varchar
 language sql
 as
@@ -222,7 +215,7 @@ begin
         elseif (method = 'shuffle_phone') then
             col_name := col_config['column']::varchar;
 
-            -- prefix shuffle via temp tabel: hash(pk, timestamp, salt) is per rij uniek en varieert per run
+            -- prefix shuffle via temp table: hash(pk, timestamp, salt) is unique per row and varies per run
             sql_stmt :=
                 'create or replace temporary table _tmp_pfx as ' ||
                 'with pool as (' ||
@@ -244,7 +237,7 @@ begin
                 'from _tmp_pfx tmp where t.' || pk || ' = tmp.tpk';
             execute immediate sql_stmt;
 
-            -- suffix shuffle: onafhankelijk via andere salt
+            -- suffix shuffle: independent via different salt
             sql_stmt :=
                 'create or replace temporary table _tmp_sfx as ' ||
                 'with pool as (' ||
@@ -273,7 +266,4 @@ begin
     return 'done';
 end;
 $$
-{%- endset -%}
-{%- do run_query(sql) -%}
-{% endif %}
-{% endmacro %}
+;
