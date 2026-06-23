@@ -1,0 +1,7 @@
+name: 'datamodder_utils'
+version: '1.0.0'
+config-version: 2
+
+profile: 'compare_wh'
+
+macro-paths: ["macros"]
