@@ -27,6 +27,7 @@ grant create procedure on schema identifier($pit_schema_name) to role identifier
 grant usage           on schema identifier($agg_schema_name) to role identifier($role_name);
 grant all privileges on all tables    in schema identifier($agg_schema_name) to role identifier($role_name);
 grant all privileges on future tables in schema identifier($agg_schema_name) to role identifier($role_name);
+grant create table     on schema identifier($agg_schema_name) to role identifier($role_name);
 grant create view      on schema identifier($agg_schema_name) to role identifier($role_name);
 grant role identifier($role_name) to user identifier($current_user_name);
 
@@ -60,8 +61,36 @@ begin
 end;
 $$;
 
+create or replace procedure register_pits()
+returns string
+language sql
+execute as caller
+as
+$$
+declare
+    db      string default $target_db_name;
+    pit_sch string default $pit_schema_name;
+    agg_sch string default $agg_schema_name;
 begin
-execute immediate replace(replace(replace(replace(replace(replace(replace(
+    execute immediate
+        'insert into ' || db || '.' || agg_sch || '.statistics (pit_name, pit_ts, col_nr, col_name)'
+     || ' select t.table_name'
+     || '      , to_timestamp_ntz(regexp_substr(t.table_name, ''[0-9]{8}_[0-9]{6}$''), ''YYYYMMDD_HH24MISS'')'
+     || '      , c.ordinal_position'
+     || '      , lower(c.column_name)'
+     || '   from ' || db || '.information_schema.tables t'
+     || '   join ' || db || '.information_schema.columns c'
+     || '     on c.table_schema = t.table_schema and c.table_name = t.table_name'
+     || '  where t.table_schema ilike ''' || pit_sch || ''''
+     || '    and regexp_like(t.table_name, ''.*_[0-9]{8}_[0-9]{6}$'')'
+     || '    and (t.table_name, lower(c.column_name)) not in'
+     || '        (select pit_name, col_name from ' || db || '.' || agg_sch || '.statistics)';
+    return 'done';
+end;
+$$;
+
+begin
+execute immediate replace(replace(replace(replace(replace(replace(replace(replace(
 $$
 create or replace view {TARGET_DB}.{AGG_SCHEMA}.stats_statements as
 with ranges as (
@@ -86,9 +115,9 @@ select lower(regexp_replace(c.table_name, '_[0-9]{8}_[0-9]{6}$', '')) as tbl_nam
      , 'select count(*) - count(' || c.column_name || ') from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name as null_count_sql
      , 'select count(distinct ' || c.column_name || ') from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name as distinct_count_sql
      , case when data_type_group = 'chars' then 'select min(length(' || c.column_name || ')) from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name
-            when data_type_group in ('numeric', 'datetime') then 'select min(' || c.column_name || ') from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name end as min_sql
+            when data_type_group in ('numeric', 'datetime') then 'select min(' || c.column_name || ') from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name end as min_val_sql
      , case when data_type_group = 'chars' then 'select max(length(' || c.column_name || ')) from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name
-            when data_type_group in ('numeric', 'datetime') then 'select max(' || c.column_name || ') from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name end as max_sql
+            when data_type_group in ('numeric', 'datetime') then 'select max(' || c.column_name || ') from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name end as max_val_sql
      , case when data_type_group = 'chars' then 'select sum(iff(length(' || c.column_name || ') < ' || r.chars_min || ', 1, 0)) from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name
             when data_type_group = 'numeric' then 'select sum(iff(' || c.column_name || ' < ' || r.numeric_min || ', 1, 0)) from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name
             when data_type_group = 'datetime' then 'select sum(iff(' || c.column_name || ' < ''' || r.datetime_min || '''::date, 1, 0)) from {TARGET_DB}.{PIT_SCHEMA}.' || c.table_name end as under_min_count_sql
@@ -112,8 +141,64 @@ $$,
 '{DATETIME_MIN}', $datetime_min::string),
 '{TARGET_DB}', $target_db_name),
 '{PIT_SCHEMA}', $pit_schema_name),
-'{AGG_SCHEMA}', $agg_schema_name)
+'{AGG_SCHEMA}',    $agg_schema_name)
 ;
 end;
 
+begin
+execute immediate
+    'create table if not exists ' || $target_db_name || '.' || $agg_schema_name || '.statistics ('
+    || '  pit_name text'
+    || ', pit_ts timestamp'
+    || ', col_nr number'
+    || ', col_name text'
+    || ', stat_ts timestamp default current_timestamp()'
+    || ', null_count number'
+    || ', distinct_count number'
+    || ', min_val number'
+    || ', max_val number'
+    || ', under_min_count number'
+    || ', above_max_count number'
+    || ')';
+end;
+
+create or replace procedure update_statistics()
+returns string
+language sql
+execute as caller
+as
+$$
+declare
+    db        string default $target_db_name;
+    agg_sch   string default $agg_schema_name;
+    stats_res resultset;
+    c         cursor for stats_res;
+begin
+    execute immediate
+        'select upper(tbl_name) || ''_'' || to_char(table_ts, ''YYYYMMDD_HH24MISS'') as pit_name'
+     || '     , col_name'
+     || '     , null_count_sql'
+     || '     , distinct_count_sql'
+     || '     , min_val_sql'
+     || '     , max_val_sql'
+     || '     , under_min_count_sql'
+     || '     , above_max_count_sql'
+     || '  from ' || db || '.' || agg_sch || '.stats_statements';
+    stats_res := (select * from table(result_scan(last_query_id())));
+    for rec in c do
+        execute immediate
+            'update ' || db || '.' || agg_sch || '.statistics'
+         || ' set stat_ts = current_timestamp()'
+         || '   , null_count = (' || rec.null_count_sql || ')'
+         || '   , distinct_count = (' || rec.distinct_count_sql || ')'
+         || '   , min_val = (' || rec.min_val_sql || ')'
+         || '   , max_val = (' || rec.max_val_sql || ')'
+         || '   , under_min_count = (' || rec.under_min_count_sql || ')'
+         || '   , above_max_count = (' || rec.above_max_count_sql || ')'
+         || ' where pit_name = ''' || rec.pit_name || ''''
+         || '   and col_name = ''' || rec.col_name || '''';
+    end for;
+    return 'done';
+end;
+$$;
 
