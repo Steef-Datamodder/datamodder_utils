@@ -19,20 +19,18 @@ create schema if not exists identifier($pit_schema_name);
 create schema if not exists identifier($agg_schema_name);
 create role if not exists identifier($role_name);
 grant usage on database identifier($target_db_name) to role identifier($role_name);
-grant usage           on schema identifier($pit_schema_name) to role identifier($role_name);
-grant all privileges on all tables    in schema identifier($pit_schema_name) to role identifier($role_name);
+grant usage on schema identifier($pit_schema_name) to role identifier($role_name);
+grant all privileges on all tables in schema identifier($pit_schema_name) to role identifier($role_name);
 grant all privileges on future tables in schema identifier($pit_schema_name) to role identifier($role_name);
-grant create table     on schema identifier($pit_schema_name) to role identifier($role_name);
+grant create table on schema identifier($pit_schema_name) to role identifier($role_name);
 grant create procedure on schema identifier($pit_schema_name) to role identifier($role_name);
-grant usage           on schema identifier($agg_schema_name) to role identifier($role_name);
-grant all privileges on all tables    in schema identifier($agg_schema_name) to role identifier($role_name);
+grant usage on schema identifier($agg_schema_name) to role identifier($role_name);
+grant all privileges on all tables in schema identifier($agg_schema_name) to role identifier($role_name);
 grant all privileges on future tables in schema identifier($agg_schema_name) to role identifier($role_name);
-grant create table     on schema identifier($agg_schema_name) to role identifier($role_name);
-grant create view      on schema identifier($agg_schema_name) to role identifier($role_name);
+grant create table on schema identifier($agg_schema_name) to role identifier($role_name);
+grant create view on schema identifier($agg_schema_name) to role identifier($role_name);
 grant role identifier($role_name) to user identifier($current_user_name);
-
 use role analyzer_role;
-use database identifier($target_db_name);
 use schema identifier($pit_schema_name);
 
 create or replace procedure create_pit(source_db  string default null
@@ -68,7 +66,7 @@ execute as caller
 as
 $$
 declare
-    db      string default $target_db_name;
+    db string default $target_db_name;
     pit_sch string default $pit_schema_name;
     agg_sch string default $agg_schema_name;
 begin
@@ -169,22 +167,20 @@ execute as caller
 as
 $$
 declare
-    db        string default $target_db_name;
-    agg_sch   string default $agg_schema_name;
-    stats_res resultset;
-    c         cursor for stats_res;
+    db      string default $target_db_name;
+    agg_sch string default $agg_schema_name;
+    sql     string;
 begin
-    execute immediate
-        'select upper(tbl_name) || ''_'' || to_char(table_ts, ''YYYYMMDD_HH24MISS'') as pit_name'
-     || '     , col_name'
-     || '     , null_count_sql'
-     || '     , distinct_count_sql'
-     || '     , min_val_sql'
-     || '     , max_val_sql'
-     || '     , under_min_count_sql'
-     || '     , above_max_count_sql'
-     || '  from ' || db || '.' || agg_sch || '.stats_statements';
-    stats_res := (select * from table(result_scan(last_query_id())));
+    sql := 'select upper(tbl_name) || ''_'' || to_char(table_ts, ''YYYYMMDD_HH24MISS'') as pit_name'
+        || '     , col_name'
+        || '     , null_count_sql'
+        || '     , distinct_count_sql'
+        || '     , min_val_sql'
+        || '     , max_val_sql'
+        || '     , under_min_count_sql'
+        || '     , above_max_count_sql'
+        || '  from ' || db || '.' || agg_sch || '.stats_statements';
+    let c resultset := (execute immediate :sql);
     for rec in c do
         execute immediate
             'update ' || db || '.' || agg_sch || '.statistics'
@@ -202,3 +198,7 @@ begin
 end;
 $$;
 
+-- uitvoeren
+-- call create_pit();
+-- call register_pits();
+-- call update_statistics();
