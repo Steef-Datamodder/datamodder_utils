@@ -1,51 +1,11 @@
 {% macro generate_date_dimension(
-    start_date              = '2000-01-01',
-    end_date                = '2030-12-31',
-    fiscal_year_start_month = 1,
-    school_holidays         = none,
-    school_holiday_region   = none,
-    school_holiday_country  = none
+    start_date = '2000-01-01'
+  , end_date = '2030-12-31'
+  , fiscal_year_start_month = 1
+  , school_holidays = none
+  , school_holiday_region = none
+  , school_holiday_country  = none
 ) %}
-{#
-  Generates a date dimension for Snowflake.
-
-  Parameters:
-    start_date              : start date (default '2000-01-01')
-    end_date                : end date   (default '2030-12-31')
-    fiscal_year_start_month : first month of the fiscal year (1-12, default 1 = calendar year)
-    school_holidays         : ref() or source() to a table with school holiday data (optional)
-                              Expected schema:
-                                start_date     DATE   -- first day of holiday
-                                end_date       DATE   -- last day of holiday
-                                holiday_name   TEXT   -- e.g. 'Summer Holiday'
-                                country        TEXT   -- 'NL', 'BE', 'DE', 'GB', 'FR', 'US'
-                                region         TEXT   -- e.g. 'Noord', 'Zone A', 'Bayern' (null = all regions)
-    school_holiday_region   : filter on region (optional, e.g. 'Noord')
-    school_holiday_country  : filter on country (optional, e.g. 'NL')
-
-  Data sources per country:
-    NL : rijksoverheid.nl/onderwerpen/schoolvakanties  (3 regions: Noord, Midden, Zuid)
-    BE : onderwijs.vlaanderen.be / enseignement.be     (3 communities: NL, FR, DE)
-    DE : kmk.org/service/schulferien                   (16 Bundesländer)
-    GB : gov.uk/school-term-and-holiday-dates          (per local authority, no central source)
-    FR : education.gouv.fr/calendrier-scolaire         (3 zones: A, B, C)
-    US : no central source; per school district
-
-  Language: set via dbt variable 'dim_date_language' (default 'nl', 'en' also supported):
-    dbt run --vars '{"dim_date_language": "en"}'
-    or in dbt_project.yml:  vars: { dim_date_language: en }
-
-  Usage in a model (models/core/dim_date.sql):
-    {{ generate_date_dimension() }}
-    {{ generate_date_dimension(
-           start_date='2015-01-01',
-           end_date='2040-12-31',
-           fiscal_year_start_month=4,
-           school_holidays=ref('school_holidays'),
-           school_holiday_country='NL',
-           school_holiday_region='Noord') }}
-#}
-
 {% set language               = _dim_date_language() %}
 {% set school_holidays        = school_holidays         or _dim_date_school_holidays() %}
 {% set school_holiday_country = school_holiday_country  or _dim_date_school_holiday_country() %}

@@ -114,3 +114,32 @@ vars:
        school_holiday_country='NL',
        school_holiday_region='Noord') }}
 ```
+
+---
+
+## Testing
+
+```bash
+dbt run-operation do_test_date_dimension
+```
+
+Creates two date dimension tables (2024–2026 with default settings, 2024 with `fiscal_year_start_month=4`) and logs pass/fail per assertion:
+
+| Assertion | What is checked |
+|---|---|
+| date_key | 2024-01-15 → `20240115` |
+| day_of_week_nr | 2024-01-01 (Monday) = `1` |
+| is_weekend | 2024-01-06 (Saturday) = `true` |
+| iso_week_label | 2024-01-08 = `'2024-W02'` |
+| is_holiday — Easter Sunday | 2024-03-31 = `true` |
+| holiday_name — Easter Sunday | 2024-03-31 = `'Easter Sunday'` |
+| is_holiday — Easter Monday | 2024-04-01 = `true` |
+| King's Day moved to April 26 | 2025-04-26 = `true` (April 27 is Sunday in 2025) |
+| April 27 no longer a holiday | 2025-04-27 = `false` |
+| holiday_name — Christmas | 2024-12-25 = `'Christmas Day'` |
+| is_workday — public holiday | 2024-01-01 (New Year's Day) = `false` |
+| is_workday — regular weekday | 2024-01-02 (Tuesday) = `true` |
+| fiscal_year before start month | 2024-03-31 with `start_month=4` → `2023` |
+| fiscal_year after start month | 2024-04-01 with `start_month=4` → `2024` |
+| fiscal_month_nr at year start | 2024-04-01 with `start_month=4` → `1` |
+| fiscal_quarter (months 1–3) | 2024-06-30 with `start_month=4` → `1` |
