@@ -51,8 +51,29 @@ Invalid values return `NULL` (no error).
 
 Override defaults via `dbt_project.yml`:
 
+
 ```yaml
 vars:
   uniform_datatypes_integer_digits: 15
   uniform_datatypes_decimal_digits: 2
 ```
+
+---
+
+## Testing
+
+```bash
+dbt run-operation do_test_uniform_datatypes
+```
+
+Creates a test table with one column of each supported type, applies the macro, and logs pass/fail per assertion:
+
+| Assertion | What is checked |
+|---|---|
+| excluded column unchanged | `id` (integer) passed through as-is |
+| varchar → text | value preserved after `::text` |
+| number → decimal | `42.5` → `42.5000` via `try_to_decimal` |
+| timestamp_ntz → timestamp_tz | date part preserved after cast |
+| time → timestamp_tz, anchor date | date part of result equals `2000-01-01` |
+| time → timestamp_tz, time value | time part of result equals `14:30:00` |
+| boolean unchanged | boolean passed through as-is |
