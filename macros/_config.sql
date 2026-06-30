@@ -16,6 +16,14 @@
 {{ return(var('dim_date_language', 'nl')) }}
 {%- endmacro -%}
 
+{%- macro _dim_date_public_holidays() -%}
+{{ return(var('dim_date_public_holidays_table', none)) }}
+{%- endmacro -%}
+
+{%- macro _dim_date_country() -%}
+{{ return(var('dim_date_country', 'NL')) }}
+{%- endmacro -%}
+
 -- School holidays: set 'dim_date_school_holidays_table' to your ref/source name
 -- e.g. in dbt_project.yml:
 --   vars:

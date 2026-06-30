@@ -16,6 +16,8 @@ Generates a full date dimension. Use as a model macro — the macro returns SQL 
 | `start_date` | string | `'2000-01-01'` | First date in the dimension |
 | `end_date` | string | `'2030-12-31'` | Last date in the dimension |
 | `fiscal_year_start_month` | int | `1` | First month of the fiscal year (1–12) |
+| `public_holidays` | relation | `none` | ref() or source() to the public holidays table (see setup below) |
+| `country` | string | `'NL'` | Country code to filter from `public_holidays` |
 | `school_holidays` | relation | `none` | ref() or source() to a school holidays table |
 | `school_holiday_country` | string | `none` | Filter on country (e.g. `'NL'`) |
 | `school_holiday_region` | string | `none` | Filter on region (e.g. `'Noord'`) |
@@ -50,7 +52,7 @@ Generates a full date dimension. Use as a model macro — the macro returns SQL 
 | `fiscal_month_nr` | Fiscal month (1–12) |
 | `fiscal_quarter` | Fiscal quarter (1–4) |
 | `fiscal_quarter_label` | E.g. `FY2024-Q2` |
-| `is_holiday` | true if Dutch public holiday |
+| `is_holiday` | true if a public holiday for the configured country |
 | `holiday_name` | Name of the holiday |
 | `is_school_holiday` | true if school holiday (only when relation provided) |
 | `school_holiday_name` | Name of the school holiday |
@@ -59,13 +61,181 @@ Generates a full date dimension. Use as a model macro — the macro returns SQL 
 
 ## Language
 
-Set via dbt variable `dim_date_language` (default `nl`, `en` also supported):
+Set via dbt variable `dim_date_language` (default `nl`):
 
 ```yaml
 # dbt_project.yml
 vars:
   dim_date_language: en
 ```
+
+Supported values for `weekday`, `weekday_abbr`, `month_name`, `month_abbr`:
+
+| Code | Language | Example weekday | Example month |
+|---|---|---|---|
+| `nl` | Dutch | maandag / ma | januari / jan |
+| `en` | English | Monday / Mo | January / Jan |
+| `de` | German | Montag / Mo | Januar / Jan |
+| `fr` | French | lundi / lun | janvier / jan |
+| `es` | Spanish | lunes / lun | enero / ene |
+| `pt` | Portuguese | segunda-feira / seg | janeiro / jan |
+| `it` | Italian | lunedì / lun | gennaio / gen |
+| `pl` | Polish | poniedziałek / pon | styczeń / sty |
+
+---
+
+## Public holidays
+
+Run `public_holidays_setup.sql` once to create and populate the table, then reference it:
+
+```yaml
+# dbt_project.yml
+vars:
+  dim_date_public_holidays_table: source('raw', 'public_holidays')
+  dim_date_country: 'NL'
+```
+
+Or pass it directly per model:
+
+```sql
+{{ generate_date_dimension(public_holidays=source('raw', 'public_holidays'), country='DE') }}
+```
+
+When `public_holidays` is not configured, `is_holiday` is always `false` and `holiday_name` is `null`.
+
+### Holidays per country
+
+**NL** — [rijksoverheid.nl/onderwerpen/feestdagen](https://www.rijksoverheid.nl/onderwerpen/feestdagen)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| Easter −2 | Good Friday |
+| Easter | Easter Sunday |
+| Easter +1 | Easter Monday |
+| 27 Apr (→ 26 if Sunday) | King's Day |
+| 5 May | Liberation Day |
+| Easter +39 | Ascension Day |
+| Easter +49 | Whit Sunday |
+| Easter +50 | Whit Monday |
+| 25 Dec | Christmas Day |
+| 26 Dec | Boxing Day |
+
+**BE** — [belgium.be/nl/werk/feestdagen](https://www.belgium.be/nl/werk/feestdagen)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| Easter | Easter Sunday |
+| Easter +1 | Easter Monday |
+| 1 May | Labour Day |
+| Easter +39 | Ascension Day |
+| Easter +49 | Whit Sunday |
+| Easter +50 | Whit Monday |
+| 21 Jul | Belgian National Day |
+| 15 Aug | Assumption |
+| 1 Nov | All Saints' Day |
+| 11 Nov | Armistice Day |
+| 25 Dec | Christmas Day |
+
+**DE** — [bmi.bund.de — Nationale Feiertage](https://www.bmi.bund.de/DE/themen/verfassung/staatliche-symbole/nationale-feiertage/nationale-feiertage-node.html)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| Easter −2 | Good Friday |
+| Easter | Easter Sunday |
+| Easter +1 | Easter Monday |
+| 1 May | Labour Day |
+| Easter +39 | Ascension Day |
+| Easter +49 | Whit Sunday |
+| Easter +50 | Whit Monday |
+| 3 Oct | German Unity Day |
+| 25 Dec | Christmas Day |
+| 26 Dec | Boxing Day |
+
+> State-specific holidays (e.g. Epiphany in Bavaria, Reformation Day in Protestant states) are not included.
+
+**FR** — [service-public.fr — Jours fériés](https://www.service-public.fr/particuliers/vosdroits/F2405)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| Easter +1 | Easter Monday |
+| 1 May | Labour Day |
+| 8 May | Victory in Europe Day |
+| Easter +39 | Ascension Day |
+| Easter +50 | Whit Monday |
+| 14 Jul | Bastille Day |
+| 15 Aug | Assumption |
+| 1 Nov | All Saints' Day |
+| 11 Nov | Armistice Day |
+| 25 Dec | Christmas Day |
+
+**GB** — [gov.uk/bank-holidays](https://www.gov.uk/bank-holidays)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| Easter −2 | Good Friday |
+| Easter +1 | Easter Monday |
+| First Mon of May | Early May Bank Holiday |
+| Last Mon of May | Spring Bank Holiday |
+| Last Mon of Aug | Summer Bank Holiday |
+| 25 Dec | Christmas Day |
+| 26 Dec | Boxing Day |
+
+> Scotland and Northern Ireland have different bank holidays; this table covers England and Wales.
+
+**ES** — [administracion.gob.es — Fiestas laborales nacionales](https://administracion.gob.es/pag_Home/atencionCiudadana/calendarios/fiestas-laborales-nacionales.html)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| 6 Jan | Epiphany |
+| Easter −2 | Good Friday |
+| 1 May | Labour Day |
+| 15 Aug | Assumption |
+| 12 Oct | National Day |
+| 1 Nov | All Saints' Day |
+| 6 Dec | Constitution Day |
+| 8 Dec | Immaculate Conception |
+| 25 Dec | Christmas Day |
+
+**IT** — [governo.it — Giorni festivi](https://www.governo.it/it/approfondimento/giorni-festivi)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| 6 Jan | Epiphany |
+| Easter | Easter Sunday |
+| Easter +1 | Easter Monday |
+| 25 Apr | Liberation Day |
+| 1 May | Labour Day |
+| 2 Jun | Republic Day |
+| 15 Aug | Assumption |
+| 1 Nov | All Saints' Day |
+| 8 Dec | Immaculate Conception |
+| 25 Dec | Christmas Day |
+| 26 Dec | St. Stephen's Day |
+
+**PT** — [eportugal.gov.pt — Feriados obrigatórios](https://eportugal.gov.pt/servicos/consultar-calendario-de-feriados-obrigatorios-em-portugal)
+
+| Date | Holiday |
+|---|---|
+| 1 Jan | New Year's Day |
+| Easter −2 | Good Friday |
+| Easter | Easter Sunday |
+| 25 Apr | Freedom Day |
+| 1 May | Labour Day |
+| Easter +60 | Corpus Christi |
+| 10 Jun | Portugal Day |
+| 15 Aug | Assumption |
+| 5 Oct | Republic Day |
+| 1 Nov | All Saints' Day |
+| 1 Dec | Restoration of Independence |
+| 8 Dec | Immaculate Conception |
+| 25 Dec | Christmas Day |
 
 ---
 
