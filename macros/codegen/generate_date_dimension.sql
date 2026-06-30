@@ -1,7 +1,10 @@
 {% macro generate_date_dimension(
     start_date              = '2000-01-01',
     end_date                = '2030-12-31',
-    fiscal_year_start_month = 1
+    fiscal_year_start_month = 1,
+    schoolvakanties         = none,
+    schoolvakantie_regio    = none,
+    schoolvakantie_land     = none
 ) %}
 {#
   Genereert een datum-dimensie voor Snowflake.
@@ -10,6 +13,23 @@
     start_date              : begindatum (default '2000-01-01')
     end_date                : einddatum  (default '2030-12-31')
     fiscal_year_start_month : startmaand van het fiscale jaar (1-12, default 1 = kalenderjaar)
+    schoolvakanties         : ref() of source() naar een tabel met schoolvakantiedata (optioneel)
+                              Verwacht schema:
+                                van_datum      DATE   -- eerste vakantiedag
+                                tot_datum      DATE   -- laatste vakantiedag
+                                vakantie_naam  TEXT   -- bijv. 'Zomervakantie'
+                                land           TEXT   -- 'NL', 'BE', 'DE', 'GB', 'FR', 'US'
+                                regio          TEXT   -- bijv. 'Noord', 'Zone A', 'Bayern' (null = alle regio's)
+    schoolvakantie_regio    : filter op regio (optioneel, bijv. 'Noord')
+    schoolvakantie_land     : filter op land  (optioneel, bijv. 'NL')
+
+  Databronnen per land:
+    NL : rijksoverheid.nl/onderwerpen/schoolvakanties          (3 regio's: Noord, Midden, Zuid)
+    BE : onderwijs.vlaanderen.be / enseignement.be             (3 gemeenschappen: NL, FR, DE)
+    DE : kmk.org/service/schulferien                           (16 Bundesländer)
+    GB : gov.uk/school-term-and-holiday-dates                  (per local authority, geen centrale bron)
+    FR : education.gouv.fr/calendrier-scolaire                 (3 zones: A, B, C)
+    US : geen centrale bron; per school district               (aggregators: niche.com/places-to-live/search/best-school-districts)
 
   Taal: stel in via dbt variable 'dim_datum_taal' (default 'nl', ook 'en' ondersteund):
     dbt run --vars '{"dim_datum_taal": "en"}'
@@ -17,10 +37,19 @@
 
   Gebruik in een model (models/core/dim_datum.sql):
     {{ generate_date_dimension() }}
-    {{ generate_date_dimension(start_date='2015-01-01', end_date='2040-12-31', fiscal_year_start_month=4) }}
+    {{ generate_date_dimension(
+           start_date='2015-01-01',
+           end_date='2040-12-31',
+           fiscal_year_start_month=4,
+           schoolvakanties=ref('schoolvakanties'),
+           schoolvakantie_land='NL',
+           schoolvakantie_regio='Noord') }}
 #}
 
-{% set taal = _dim_datum_taal() %}
+{% set taal                  = _dim_datum_taal() %}
+{% set schoolvakanties       = schoolvakanties    or _dim_datum_schoolvakanties() %}
+{% set schoolvakantie_land   = schoolvakantie_land  or _dim_datum_schoolvakantie_land() %}
+{% set schoolvakantie_regio  = schoolvakantie_regio or _dim_datum_schoolvakantie_regio() %}
 
 with date_spine as (
     select dateadd('day', seq4(), '{{ start_date }}'::date) as datum
@@ -53,6 +82,21 @@ with date_spine as (
                to_date(jr::string || '-03-01', 'YYYY-MM-DD'))                     as eerste_paasdag
       from stap2
 
+{% if schoolvakanties is not none %}
+), schoolvakanties_gefilterd as (
+    select van_datum
+         , tot_datum
+         , vakantie_naam
+      from {{ schoolvakanties }}
+     where 1 = 1
+    {% if schoolvakantie_land is not none %}
+       and land = '{{ schoolvakantie_land }}'
+    {% endif %}
+    {% if schoolvakantie_regio is not none %}
+       and (regio = '{{ schoolvakantie_regio }}' or regio is null)
+    {% endif %}
+
+{% endif %}
 ), feestdagen as (
     -- Vaste feestdagen
     select to_date(jr::string || '-01-01', 'YYYY-MM-DD') as datum, 'Nieuwjaarsdag'   as feestdag_naam from jaar_lijst union all
@@ -144,8 +188,18 @@ select ds.datum                                                                 
      , fd.feestdag_naam is not null                                                             as is_feestdag
      , fd.feestdag_naam
 
+     -- ── Schoolvakanties ──────────────────────────────────────────────────────────
+     {% if schoolvakanties is not none %}
+     , sv.vakantie_naam is not null                                                             as is_schoolvakantie
+     , sv.vakantie_naam                                                                         as schoolvakantie_naam
+     {% endif %}
+
   from date_spine ds
   left join feestdagen fd on fd.datum = ds.datum
+  {% if schoolvakanties is not none %}
+  left join schoolvakanties_gefilterd sv
+    on  ds.datum between sv.van_datum and sv.tot_datum
+  {% endif %}
  order by ds.datum
 
 {% endmacro %}
