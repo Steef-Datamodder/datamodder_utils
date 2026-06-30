@@ -301,7 +301,7 @@
 
 {#- ── Test values ───────────────────────────────────────────────────────── -#}
 
-{#- 2026-06-14 16:00:00  (een week geleden, 16:00 — zondag / Sunday / dimanche / Sonntag) -#}
+{#- 2026-06-14 16:00:00  (last Sunday, 16:00 — zondag / Sunday / dimanche / Sonntag) -#}
 {%- set _tv_wk = [
     '2026-06-14 16:00:00',
     '2026-06-14T16:00:00',
@@ -334,7 +334,7 @@
     'domingo 14 junio 2026 16:00:00'
 ] -%}
 
-{#- 2024-02-29 11:00:00  (laatste schrikkeldag, 11:00 — donderdag / Thursday / jeudi / Donnerstag) -#}
+{#- 2024-02-29 11:00:00  (most recent leap day, 11:00 — donderdag / Thursday / jeudi / Donnerstag) -#}
 {%- set _tv_ld1 = [
     '2024-02-29 11:00:00',
     '2024-02-29T11:00:00',
@@ -358,7 +358,7 @@
     'Donnerstag, 29 Februar 2024 11:00:00'
 ] -%}
 
-{#- 2024-02-29 23:00:00  (laatste schrikkeldag, 23:00 — donderdag) -#}
+{#- 2024-02-29 23:00:00  (most recent leap day, 23:00 — donderdag / Thursday) -#}
 {%- set _tv_ld2 = [
     '2024-02-29 23:00:00',
     '2024-02-29T23:00:00',
@@ -372,7 +372,7 @@
     'Thursday, 29 February 2024 23:00:00'
 ] -%}
 
-{#- 1936-01-01 23:00:00  (1 jan 1936, 23:00 — woensdag / Wednesday / mercredi / Mittwoch) -#}
+{#- 1936-01-01 23:00:00  (1 Jan 1936, 23:00 — woensdag / Wednesday / mercredi / Mittwoch) -#}
 {%- set _tv_1936 = [
     '1936-01-01 23:00:00',
     '1936-01-01T23:00:00',
@@ -393,7 +393,7 @@
     'Mittwoch, 1 Januar 1936 23:00:00'
 ] -%}
 
-{#- 1905-01-01  (1 jan 1905 — zondag / Sunday / dimanche / Sonntag) -#}
+{#- 1905-01-01  (1 Jan 1905 — zondag / Sunday / dimanche / Sonntag) -#}
 {%- set _tv_1905 = [
     '1905-01-01',
     '01-01-1905',

@@ -11,15 +11,15 @@
 
 {% macro generate_source_yaml(database, schemas=none, split=true) %}
 {#
-  Genereert sources.yml-inhoud voor alle tabellen in een database.
+  Generates sources.yml content for all tables in a database.
 
   Parameters:
-    database : Snowflake-database (verplicht)
-    schemas  : string, lijst van strings, of none (= alle schema's)
-    split    : true  → per schema een apart blok met bestandspad als commentaar (default)
-               false → één gecombineerd sources.yml
+    database : Snowflake database (required)
+    schemas  : string, list of strings, or none (= all schemas)
+    split    : true  → one block per schema with file path as comment (default)
+               false → single combined sources.yml
 
-  Gebruik:
+  Usage:
     dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data"}'
     dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "schemas": "tpch_sf1"}'
     dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "schemas": ["tpch_sf1", "tpch_sf10"]}'
@@ -90,10 +90,10 @@ select lower(c.table_schema) as table_schema
 
 {% macro generate_staging_models(database, schemas=none) %}
 {#
-  Toont de inhoud van elk staging-model (één per tabel).
-  Gescheiden door -- === {schema}/{tabel}.sql === commentaren.
+  Outputs the content of each staging model (one per table).
+  Separated by -- === {schema}/{table}.sql === comments.
 
-  Gebruik:
+  Usage:
     dbt run-operation generate_staging_models --args '{"database": "snowflake_sample_data"}'
     dbt run-operation generate_staging_models --args '{"database": "snowflake_sample_data", "schemas": ["tpch_sf1", "tpch_sf10"]}'
 #}
@@ -126,9 +126,9 @@ select lower(table_schema) as table_schema
 
 {% macro generate_dbt_project_snippet(database, schemas=none) %}
 {#
-  Toont het te plakken blok onder 'models:' in dbt_project.yml.
+  Outputs the block to paste under 'models:' in dbt_project.yml.
 
-  Gebruik:
+  Usage:
     dbt run-operation generate_dbt_project_snippet --args '{"database": "snowflake_sample_data"}'
     dbt run-operation generate_dbt_project_snippet --args '{"database": "snowflake_sample_data", "schemas": ["tpch_sf1"]}'
 #}

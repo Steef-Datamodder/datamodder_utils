@@ -1,6 +1,6 @@
 # uniform_datatypes
 
-Genereert een SELECT die alle kolommen naar uniforme datatypes cast. Gebruik als model-macro.
+Generates a SELECT that casts all columns to uniform data types. Use as a model macro.
 
 ```sql
 -- models/staging/stg_orders.sql
@@ -11,48 +11,48 @@ Genereert een SELECT die alle kolommen naar uniforme datatypes cast. Gebruik als
 
 ## Parameters
 
-| Parameter | Type | Default | Omschrijving |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `relatie` | relatie | — | ref() of source() naar de brontabel (verplicht) |
-| `voor_komma` | int | `18` (via `_config.sql`) | Maximaal aantal cijfers vóór de komma |
-| `na_komma` | int | `4` (via `_config.sql`) | Maximaal aantal cijfers ná de komma |
-| `kolommen_uitsluiten` | lijst | `[]` | Kolomnamen die ongewijzigd worden doorgelaten |
+| `relation` | relation | — | ref() or source() pointing to the source table (required) |
+| `integer_digits` | int | `18` (via `_config.sql`) | Max digits before the decimal point |
+| `decimal_digits` | int | `4` (via `_config.sql`) | Max digits after the decimal point |
+| `exclude_columns` | list | `[]` | Column names to pass through unchanged |
 
 ---
 
-## Conversies
+## Conversions
 
-| Brontype | Doeltype | Functie |
+| Source type | Target type | Function |
 |---|---|---|
 | TEXT, VARCHAR, CHAR, … | `TEXT` | `::text` |
 | NUMBER, INT, FLOAT, … | `DECIMAL(precision, scale)` | `try_to_decimal()` |
 | DATE, TIMESTAMP_NTZ, TIMESTAMP_LTZ, TIMESTAMP_TZ | `TIMESTAMP_TZ` | `try_to_timestamp_tz()` |
 | TIME | `TIMESTAMP_TZ` | `try_to_timestamp_tz('2000-01-01 ' \|\| col, …)` |
-| BOOLEAN, VARIANT, overig | ongewijzigd | — |
+| BOOLEAN, VARIANT, other | unchanged | — |
 
-Ongeldige waarden leveren `NULL` op (geen fout).
+Invalid values return `NULL` (no error).
 
-> **TIME-ankerdatum:** Voor TIME-kolommen wordt `2000-01-01` als ankerdatum gebruikt. Dit vermijdt zowel de Excel-schrikkeljaarfout (1900) als de Nederlandse tijdzoneverschuiving van 17 mei 1937 (Amsterdam Mean Time → CET).
+> **TIME anchor date:** `2000-01-01` is used as anchor for TIME columns. This avoids both the Excel leap year bug (1900) and the Dutch timezone shift of 17 May 1937 (Amsterdam Mean Time → CET).
 
 ---
 
-## Voorbeelden
+## Examples
 
 ```sql
--- Standaard
+-- Default
 {{ uniform_datatypes(ref('raw_orders')) }}
 
--- Aangepaste precisie
-{{ uniform_datatypes(source('raw', 'orders'), voor_komma=15, na_komma=2) }}
+-- Custom precision
+{{ uniform_datatypes(source('raw', 'orders'), integer_digits=15, decimal_digits=2) }}
 
--- Kolommen uitsluiten
-{{ uniform_datatypes(ref('raw_orders'), kolommen_uitsluiten=['id', 'record_hash']) }}
+-- Exclude columns
+{{ uniform_datatypes(ref('raw_orders'), exclude_columns=['id', 'record_hash']) }}
 ```
 
-Standaardwaarden aanpassen via `dbt_project.yml`:
+Override defaults via `dbt_project.yml`:
 
 ```yaml
 vars:
-  uniform_datatypes_voor_komma: 15
-  uniform_datatypes_na_komma: 2
+  uniform_datatypes_integer_digits: 15
+  uniform_datatypes_decimal_digits: 2
 ```

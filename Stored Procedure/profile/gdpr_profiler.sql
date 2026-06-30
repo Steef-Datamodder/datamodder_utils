@@ -102,7 +102,7 @@ def profile_pii(
         actual_sample_size = 0
 
         if name_matched:
-            detection_reasons.append(f"Kolomnaam matcht regex: {cand['COLUMN_NAME_REGEX']}")
+            detection_reasons.append(f"Column name matched regex: {cand['COLUMN_NAME_REGEX']}")
 
         if value_regex:
             try:
@@ -124,12 +124,12 @@ def profile_pii(
 
                 if value_matched:
                     detection_reasons.append(
-                        f"Samplewaarden matchen regex: {value_regex} "
+                        f"Sample values matched regex: {value_regex} "
                         f"({matched_sample_count}/{actual_sample_size}, {match_ratio:.0%})"
                     )
 
             except Exception as err:
-                detection_reasons.append(f"Waardescan mislukt: {str(err)}")
+                detection_reasons.append(f"Value scan failed: {str(err)}")
 
         if not (name_matched or value_matched):
             continue

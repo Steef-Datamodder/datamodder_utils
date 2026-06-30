@@ -198,7 +198,6 @@ begin
 end;
 $$;
 
--- uitvoeren
 -- call create_pit();
 -- call register_pits();
 -- call update_statistics();

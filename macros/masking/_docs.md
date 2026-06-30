@@ -56,8 +56,8 @@ Or from a dbt macro or model:
 
 ```sql
 {{ apply_masking_tag('mydb.myschema.customers', 'email', 'pii_email') }}
-{{ apply_masking_tag('mydb.myschema.customers', 'naam', 'pii_name') }}
-{{ apply_masking_tag('mydb.myschema.customers', 'geboortedatum', 'pii_date') }}
+{{ apply_masking_tag('mydb.myschema.customers', 'name', 'pii_name') }}
+{{ apply_masking_tag('mydb.myschema.customers', 'date_of_birth', 'pii_date') }}
 ```
 
 ---

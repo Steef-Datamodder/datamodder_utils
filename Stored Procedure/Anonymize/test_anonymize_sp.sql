@@ -3,11 +3,11 @@ use warehouse MY_WAREHOUSE;   -- change to your warehouse
 use database MY_DATABASE;     -- change to your database
 
 -- ----------------------------------------------------------------
--- setup: lookup table with fruit (appel 5x for weighted test)
+-- setup: lookup table with fruit (apple 5x for weighted test)
 -- ----------------------------------------------------------------
 create or replace table datamodder.abc as
 select value::varchar as xyz
-from table(flatten(input => parse_json('["appel","appel","appel","appel","appel","peer","banaan","aardbei","mango","kiwi","druif","sinaasappel","kers","ananas"]')));
+from table(flatten(input => parse_json('["apple","apple","apple","apple","apple","pear","banana","strawberry","mango","kiwi","grape","orange","cherry","pineapple"]')));
 
 -- ----------------------------------------------------------------
 -- setup: combined test table covering all anonymization methods

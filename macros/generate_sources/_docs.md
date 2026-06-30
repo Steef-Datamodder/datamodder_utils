@@ -1,12 +1,12 @@
 # generate_sources
 
-Macros voor het genereren van bronbestanden en dbt-configuratie op basis van Snowflake-metadata.
+Macros for generating source files and dbt configuration from Snowflake metadata.
 
 ---
 
 ## generate_source_yaml
 
-Genereert `sources.yml`-inhoud. Kopieer de console-output naar `models/staging/sources/`.
+Generates `sources.yml` content. Copy the console output to `models/staging/sources/`.
 
 ```bash
 dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data"}'
@@ -14,25 +14,25 @@ dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_da
 
 ### Parameters
 
-| Parameter | Type | Default | Omschrijving |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `database` | string | — | Snowflake-database (verplicht) |
-| `schemas` | string of lijst | `none` (= alle) | Filter op één of meerdere schema's |
-| `split` | boolean | `true` | `true` → per schema een apart blok met bestandspad als commentaar; `false` → één gecombineerde YAML |
+| `database` | string | — | Snowflake database (required) |
+| `schemas` | string or list | `none` (= all) | Filter on one or more schemas |
+| `split` | boolean | `true` | `true` → one block per schema with file path as comment; `false` → single combined YAML |
 
-### Voorbeelden
+### Examples
 
 ```bash
-# Alle schema's, gesplitst per bestand
+# All schemas, split per file
 dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data"}'
 
-# Eén schema
+# Single schema
 dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "schemas": "tpch_sf1"}'
 
-# Meerdere schema's
+# Multiple schemas
 dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "schemas": ["tpch_sf1", "tpch_sf10"]}'
 
-# Alles in één bestand
+# Everything in one file
 dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "split": false}'
 ```
 
@@ -40,7 +40,7 @@ dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_da
 
 ## generate_staging_models
 
-Toont de inhoud van elk staging-model (`select * from {{ source(...) }}`), per tabel gescheiden door een commentaarregel met het bestandspad.
+Outputs the content of each staging model (`select * from {{ source(...) }}`), separated by a comment line with the file path.
 
 ```bash
 dbt run-operation generate_staging_models --args '{"database": "snowflake_sample_data"}'
@@ -48,16 +48,16 @@ dbt run-operation generate_staging_models --args '{"database": "snowflake_sample
 
 ### Parameters
 
-| Parameter | Type | Default | Omschrijving |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `database` | string | — | Snowflake-database (verplicht) |
-| `schemas` | string of lijst | `none` (= alle) | Filter op één of meerdere schema's |
+| `database` | string | — | Snowflake database (required) |
+| `schemas` | string or list | `none` (= all) | Filter on one or more schemas |
 
 ---
 
 ## generate_dbt_project_snippet
 
-Toont het blok om onder `models:` in `dbt_project.yml` te plakken.
+Outputs the block to paste under `models:` in `dbt_project.yml`.
 
 ```bash
 dbt run-operation generate_dbt_project_snippet --args '{"database": "snowflake_sample_data"}'
@@ -65,12 +65,12 @@ dbt run-operation generate_dbt_project_snippet --args '{"database": "snowflake_s
 
 ### Parameters
 
-| Parameter | Type | Default | Omschrijving |
+| Parameter | Type | Default | Description |
 |---|---|---|---|
-| `database` | string | — | Snowflake-database (verplicht) |
-| `schemas` | string of lijst | `none` (= alle) | Filter op één of meerdere schema's |
+| `database` | string | — | Snowflake database (required) |
+| `schemas` | string or list | `none` (= all) | Filter on one or more schemas |
 
-### Voorbeeldoutput
+### Example output
 
 ```yaml
     staging:
