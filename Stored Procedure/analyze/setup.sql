@@ -1,6 +1,6 @@
-set db_name     = 'analyzer';
-set schema_name = 'analyzer';
-set role_name   = 'analyzer_role';
+set db_name = 'datamodder';
+set schema_name = 'analyze';
+set role_name = 'analyzer_role';
 
 use role accountadmin;
 create database identifier($db_name);

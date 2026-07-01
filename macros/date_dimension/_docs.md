@@ -1,10 +1,10 @@
-# generate_date_dimension
+# generate
 
 Generates a full date dimension. Use as a model macro — the macro returns SQL that serves directly as the model definition.
 
 ```sql
 -- models/core/dim_date.sql
-{{ generate_date_dimension() }}
+{{ generate() }}
 ```
 
 ---
@@ -18,6 +18,7 @@ Generates a full date dimension. Use as a model macro — the macro returns SQL 
 | `fiscal_year_start_month` | int | `1` | First month of the fiscal year (1–12) |
 | `public_holidays` | relation | `none` | ref() or source() to the public holidays table (see setup below) |
 | `country` | string | `'NL'` | Country code to filter from `public_holidays` |
+| `datenames` | relation | `none` | ref() or source() to the date names table (see setup below) |
 | `school_holidays` | relation | `none` | ref() or source() to a school holidays table |
 | `school_holiday_country` | string | `none` | Filter on country (e.g. `'NL'`) |
 | `school_holiday_region` | string | `none` | Filter on region (e.g. `'Noord'`) |
@@ -33,8 +34,8 @@ Generates a full date dimension. Use as a model macro — the macro returns SQL 
 | `day_nr` | Day of the month (1–31) |
 | `day_of_year` | Day of the year (1–366) |
 | `day_of_week_nr` | ISO weekday number (1 = Mon, 7 = Sun) |
-| `weekday` | Day name (language-dependent) |
-| `weekday_abbr` | Day name abbreviation |
+| `weekday` | Day name — only present when `datenames` is configured |
+| `weekday_abbr` | Day name abbreviation — only present when `datenames` is configured |
 | `is_weekend` | true if Saturday or Sunday |
 | `is_workday` | true if not a weekend day and not a holiday |
 | `week_nr` | Calendar week (1–53) |
@@ -42,8 +43,8 @@ Generates a full date dimension. Use as a model macro — the macro returns SQL 
 | `iso_week_year` | Year of the ISO week |
 | `iso_week_label` | E.g. `2024-W03` |
 | `month_nr` | Month number (1–12) |
-| `month_name` | Month name (language-dependent) |
-| `month_abbr` | Month name abbreviation |
+| `month_name` | Month name — only present when `datenames` is configured |
+| `month_abbr` | Month name abbreviation — only present when `datenames` is configured |
 | `month_label` | E.g. `2024-03` |
 | `quarter` | Quarter (1–4) |
 | `quarter_label` | E.g. `2024-Q1` |
@@ -69,7 +70,7 @@ vars:
   dim_date_language: en
 ```
 
-Supported values for `weekday`, `weekday_abbr`, `month_name`, `month_abbr`:
+The language code is used to filter the `datenames` table. Supported values:
 
 | Code | Language | Example weekday | Example month |
 |---|---|---|---|
@@ -84,26 +85,50 @@ Supported values for `weekday`, `weekday_abbr`, `month_name`, `month_abbr`:
 
 ---
 
-## Public holidays
+## Setup
 
-Run `public_holidays_setup.sql` once to create and populate the table. Before running, replace `your_database.your_schema` at the top of the file with your actual database and schema. The script uses `CREATE OR REPLACE` and is safe to re-run.
+Run `setup.sql` once to create both lookup tables. Adjust `db` and `sch` at the top of the file to match your Snowflake environment. The script creates the database and schema if they don't exist and uses `CREATE OR REPLACE` throughout, so it is safe to re-run.
 
-Then reference it from your dbt project:
+The script creates two tables:
+
+- `datamodder.utils.holidays` — public holidays for NL, BE, DE, FR, GB, ES, IT, PT (years 2000–2100)
+- `datamodder.utils.datenames` — weekday and month names and abbreviations for 8 languages
+
+Configure defaults via `dbt_project.yml`:
 
 ```yaml
-# dbt_project.yml
 vars:
-  dim_date_public_holidays_table: source('raw', 'public_holidays')
+  dim_date_public_holidays_table: "datamodder.utils.holidays"
   dim_date_country: 'NL'
+  dim_date_datenames_table: "datamodder.utils.datenames"
+  dim_date_language: nl
 ```
 
-Or pass it directly per model:
+Or pass tables directly per model:
 
 ```sql
-{{ generate_date_dimension(public_holidays=source('raw', 'public_holidays'), country='DE') }}
+{{ generate(
+       public_holidays=source('utils', 'holidays'),
+       country='DE',
+       datenames=source('utils', 'datenames')) }}
 ```
 
 When `public_holidays` is not configured, `is_holiday` is always `false` and `holiday_name` is `null`.
+When `datenames` is not configured, the `weekday`, `weekday_abbr`, `month_name` and `month_abbr` columns are not included in the output.
+
+## Date names
+
+The `datenames` table has the following schema:
+
+| Column | Type | Description |
+|---|---|---|
+| `language` | varchar(2) | Language code (`nl`, `en`, `de`, `fr`, `es`, `pt`, `it`, `pl`) |
+| `type` | varchar(7) | `weekday` (1–7, Mon–Sun) or `month` (1–12) |
+| `nr` | integer | ISO weekday number or month number |
+| `name` | varchar | Full name |
+| `abbr` | varchar | Abbreviated name |
+
+## Public holidays
 
 ### Holidays per country
 
@@ -278,7 +303,7 @@ vars:
 ## Extended example
 
 ```sql
-{{ generate_date_dimension(
+{{ generate(
        start_date='2015-01-01',
        end_date='2040-12-31',
        fiscal_year_start_month=4,
@@ -292,7 +317,7 @@ vars:
 ## Testing
 
 ```bash
-dbt run-operation do_test_date_dimension
+dbt run-operation do_test
 ```
 
 Creates two date dimension tables (2024–2026 with default settings, 2024 with `fiscal_year_start_month=4`) and logs pass/fail per assertion:

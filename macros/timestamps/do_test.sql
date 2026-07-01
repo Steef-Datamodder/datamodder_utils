@@ -10,7 +10,7 @@
 -#}
 
 {%- set cfg = _timestamp_config() -%}
-{%- set tbl = target.database ~ "." ~ cfg.test_schema ~ ".test_to_timestamp" -%}
+{%- set tbl = cfg.test_database ~ "." ~ cfg.test_schema ~ ".test_to_timestamp" -%}
 
 {% set update_sql %}
 update {{ tbl }}

@@ -40,10 +40,10 @@ dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_da
 
 ## generate_staging_models
 
-Outputs the content of each staging model (`select * from {{ source(...) }}`), separated by a comment line with the file path.
+Generates a boilerplate staging model for each table in the database: a `select * from {{ source(...) }}` query, preceded by a comment line with the suggested file path. Copy each block to the corresponding `.sql` file under `models/staging/`.
 
 ```bash
-dbt run-operation generate_staging_models --args '{"database": "snowflake_sample_data"}'
+dbt run-operation generate_staging_models --args '{"database": "snowflake_sample_data", "schemas": "tpch_sf1"}'
 ```
 
 ### Parameters
@@ -52,6 +52,16 @@ dbt run-operation generate_staging_models --args '{"database": "snowflake_sample
 |---|---|---|---|
 | `database` | string | — | Snowflake database (required) |
 | `schemas` | string or list | `none` (= all) | Filter on one or more schemas |
+
+### Example output
+
+```sql
+-- === models/staging/tpch_sf1/customer.sql ===
+select * from {{ source('tpch_sf1', 'customer') }}
+
+-- === models/staging/tpch_sf1/orders.sql ===
+select * from {{ source('tpch_sf1', 'orders') }}
+```
 
 ---
 

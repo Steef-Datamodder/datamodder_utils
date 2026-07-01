@@ -11,7 +11,8 @@
     'two_digit_years':  true,
     'abbreviations':    true,
     'output_type':      'tz',
-    'test_schema':      _datamodder_schema()
+    'test_database':    _datamodder_database(),
+    'test_schema':      'test_timestamps'
 } -%}
 {%- set user = var('timestamp_config', {}) -%}
 {{ return({
@@ -20,6 +21,7 @@
     'two_digit_years': user.get('two_digit_years', defaults.two_digit_years),
     'abbreviations':   user.get('abbreviations',   defaults.abbreviations),
     'output_type':     user.get('output_type',     defaults.output_type),
+    'test_database':   user.get('test_database',   defaults.test_database),
     'test_schema':     user.get('test_schema',     defaults.test_schema)
 }) }}
 {%- endmacro -%}

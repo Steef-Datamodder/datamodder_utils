@@ -1,8 +1,10 @@
 {% macro log_dbt_start() %}
 {%- set cfg = _management_config() -%}
-{%- set schema_ref = target.database ~ '.' ~ cfg.schema -%}
+{%- set schema_ref = cfg.database ~ '.' ~ cfg.schema -%}
 {%- set tbl = schema_ref ~ '.' ~ cfg.table -%}
 {% if execute %}
+    {%- do run_query('create database if not exists ' ~ cfg.database) -%}
+    {%- do run_query('create schema if not exists ' ~ schema_ref) -%}
     {%- set create_table_sql %}
         create table if not exists {{ tbl }} (invocation_id varchar
                                             , project_name varchar

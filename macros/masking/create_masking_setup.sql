@@ -1,7 +1,9 @@
 {% macro create_masking_setup() %}
 {% if execute %}
-{%- set schema_ref = target.database ~ '.' ~ _datamodder_schema() -%}
+{%- set schema_ref = _datamodder_database() ~ '.' ~ _datamodder_schema() -%}
 {%- set unmasked_roles = var('masking_unmasked_roles', ['SYSADMIN']) -%}
+{%- do run_query('create database if not exists ' ~ _datamodder_database()) -%}
+{%- do run_query('create schema if not exists ' ~ schema_ref) -%}
 {%- set roles_sql = "'" ~ unmasked_roles | join("', '") ~ "'" -%}
 
 {%- do run_query('create tag if not exists ' ~ schema_ref ~ '.pii_name    comment = \'Personal name field\'') -%}

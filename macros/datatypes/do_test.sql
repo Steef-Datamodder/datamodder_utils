@@ -7,38 +7,40 @@
     dbt run-operation do_test_uniform_datatypes
 #}
 
-{% set schema  = _datamodder_schema() %}
-{% set tbl_src = target.database ~ '.' ~ schema ~ '.test_uniform_datatypes_src' %}
-{% set tbl_out = target.database ~ '.' ~ schema ~ '.test_uniform_datatypes_out' %}
+{% set db = _datamodder_database() %}
+{% set schema = _datamodder_schema() %}
+{% set tbl_src = db ~ '.' ~ schema ~ '.test_uniform_datatypes_src' %}
+{% set tbl_out = db ~ '.' ~ schema ~ '.test_uniform_datatypes_out' %}
 
-{% do run_query("create schema if not exists " ~ target.database ~ "." ~ schema) %}
+{% do run_query("create database if not exists " ~ db) %}
+{% do run_query("create schema if not exists " ~ db ~ "." ~ schema) %}
 
 {% do run_query("
     create or replace table " ~ tbl_src ~ " (
-        id      integer,
-        label   varchar,
-        amount  number(10, 2),
-        ts      timestamp_ntz,
-        t       time,
-        flag    boolean
+        id integer
+      , label varchar
+      , amount number(10, 2)
+      , ts timestamp_ntz
+      , t time
+      , flag boolean
     )
 ") %}
 
 {% do run_query("
     insert into " ~ tbl_src ~ " values (
-        1,
-        'hello',
-        42.5,
-        '2024-01-15 10:30:00'::timestamp_ntz,
-        '14:30:00'::time,
-        true
+        1
+      , 'hello'
+      , 42.5
+      , '2024-01-15 10:30:00'::timestamp_ntz
+      , '14:30:00'::time
+      , true
     )
 ") %}
 
 {% set src_rel = adapter.get_relation(
-    database = target.database,
-    schema   = schema,
-    identifier = 'test_uniform_datatypes_src'
+       database = target.database
+     , schema = schema
+     , identifier = 'test_uniform_datatypes_src'
 ) %}
 
 {% set create_out %}
@@ -48,25 +50,24 @@ create or replace table {{ tbl_out }} as
 {% do run_query(create_out) %}
 
 {% set checks = run_query("
-    select
-        id        = 1                           as chk_excluded
-      , label     = 'hello'                     as chk_text
-      , amount    = 42.5                        as chk_decimal
-      , ts::date  = '2024-01-15'::date          as chk_timestamp
-      , t::date   = '2000-01-01'::date          as chk_time_anchor
-      , to_time(t) = '14:30:00'::time           as chk_time_value
-      , flag      = true                        as chk_boolean
-    from " ~ tbl_out) %}
+    select id = 1 as chk_excluded
+         , label = 'hello' as chk_text
+         , amount = 42.5 as chk_decimal
+         , ts::date = '2024-01-15'::date as chk_timestamp
+         , t::date = '2000-01-01'::date as chk_time_anchor
+         , to_time(t) = '14:30:00'::time as chk_time_value
+         , flag = true as chk_boolean
+      from " ~ tbl_out) %}
 
 {% set row   = checks.rows[0] %}
 {% set tests = [
-    ('excluded column unchanged (id)',    row[0]),
-    ('varchar → text',                    row[1]),
-    ('number → decimal',                  row[2]),
-    ('timestamp_ntz → timestamp_tz',      row[3]),
-    ('time → timestamp_tz, anchor date',  row[4]),
-    ('time → timestamp_tz, time value',   row[5]),
-    ('boolean unchanged',                 row[6]),
+    ('excluded column unchanged (id)', row[0]),
+    ('varchar → text', row[1]),
+    ('number → decimal', row[2]),
+    ('timestamp_ntz → timestamp_tz', row[3]),
+    ('time → timestamp_tz, anchor date', row[4]),
+    ('time → timestamp_tz, time value', row[5]),
+    ('boolean unchanged', row[6]),
 ] %}
 
 {% set ns = namespace(passed=0, failed=0) %}

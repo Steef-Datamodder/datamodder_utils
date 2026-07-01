@@ -8,34 +8,18 @@
   {% endif %}
 {%- endmacro %}
 
-
 {% macro generate_source_yaml(database, schemas=none, split=true) %}
-{#
-  Generates sources.yml content for all tables in a database.
-
-  Parameters:
-    database : Snowflake database (required)
-    schemas  : string, list of strings, or none (= all schemas)
-    split    : true  → one block per schema with file path as comment (default)
-               false → single combined sources.yml
-
-  Usage:
-    dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data"}'
-    dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "schemas": "tpch_sf1"}'
-    dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "schemas": ["tpch_sf1", "tpch_sf10"]}'
-    dbt run-operation generate_source_yaml --args '{"database": "snowflake_sample_data", "split": false}'
-#}
 
 {% set sql %}
 select lower(c.table_schema) as table_schema
-     , lower(c.table_name)   as table_name
-     , lower(c.column_name)  as column_name
-     , lower(c.data_type)    as data_type
+     , lower(c.table_name) as table_name
+     , lower(c.column_name) as column_name
+     , lower(c.data_type) as data_type
   from {{ database }}.information_schema.columns c
   join {{ database }}.information_schema.tables t
     on  t.table_catalog = c.table_catalog
-   and  t.table_schema  = c.table_schema
-   and  t.table_name    = c.table_name
+   and  t.table_schema = c.table_schema
+   and  t.table_name = c.table_name
  where c.table_schema not ilike 'information_schema'
    and t.table_type = 'BASE TABLE'
    {{ _schema_filter(schemas, 'c.table_schema') }}
@@ -44,8 +28,8 @@ select lower(c.table_schema) as table_schema
 
 {% if execute %}
   {% set results = run_query(sql) %}
-  {% set lines   = [] %}
-  {% set ns      = namespace(schema='', table='') %}
+  {% set lines = [] %}
+  {% set ns = namespace(schema='', table='') %}
 
   {% if not split %}
     {% set _ = lines.append('version: 2') %}
@@ -87,20 +71,11 @@ select lower(c.table_schema) as table_schema
 
 {% endmacro %}
 
-
 {% macro generate_staging_models(database, schemas=none) %}
-{#
-  Outputs the content of each staging model (one per table).
-  Separated by -- === {schema}/{table}.sql === comments.
-
-  Usage:
-    dbt run-operation generate_staging_models --args '{"database": "snowflake_sample_data"}'
-    dbt run-operation generate_staging_models --args '{"database": "snowflake_sample_data", "schemas": ["tpch_sf1", "tpch_sf10"]}'
-#}
 
 {% set sql %}
 select lower(table_schema) as table_schema
-     , lower(table_name)   as table_name
+     , lower(table_name) as table_name
   from {{ database }}.information_schema.tables
  where table_schema not ilike 'information_schema'
    and table_type = 'BASE TABLE'
@@ -110,7 +85,7 @@ select lower(table_schema) as table_schema
 
 {% if execute %}
   {% set results = run_query(sql) %}
-  {% set lines   = [] %}
+  {% set lines = [] %}
 
   {% for row in results %}
     {% if not loop.first %}{% set _ = lines.append('') %}{% endif %}
@@ -123,15 +98,7 @@ select lower(table_schema) as table_schema
 
 {% endmacro %}
 
-
 {% macro generate_dbt_project_snippet(database, schemas=none) %}
-{#
-  Outputs the block to paste under 'models:' in dbt_project.yml.
-
-  Usage:
-    dbt run-operation generate_dbt_project_snippet --args '{"database": "snowflake_sample_data"}'
-    dbt run-operation generate_dbt_project_snippet --args '{"database": "snowflake_sample_data", "schemas": ["tpch_sf1"]}'
-#}
 
 {% set sql %}
 select distinct lower(table_schema) as table_schema

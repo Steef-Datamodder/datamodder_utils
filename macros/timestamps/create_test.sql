@@ -10,9 +10,10 @@
 
 {%- set cfg  = _timestamp_config() -%}
 {%- set vals = _data().test_values -%}
-{%- set tbl  = target.database ~ "." ~ cfg.test_schema ~ ".test_to_timestamp" -%}
+{%- set tbl  = cfg.test_database ~ "." ~ cfg.test_schema ~ ".test_to_timestamp" -%}
 
-{% do run_query("create schema if not exists " ~ target.database ~ "." ~ cfg.test_schema) %}
+{% do run_query("create database if not exists " ~ cfg.test_database) %}
+{% do run_query("create schema if not exists " ~ cfg.test_database ~ "." ~ cfg.test_schema) %}
 
 {% set create_sql %}
 create or replace table {{ tbl }} (
