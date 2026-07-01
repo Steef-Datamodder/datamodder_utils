@@ -86,7 +86,9 @@ Supported values for `weekday`, `weekday_abbr`, `month_name`, `month_abbr`:
 
 ## Public holidays
 
-Run `public_holidays_setup.sql` once to create and populate the table, then reference it:
+Run `public_holidays_setup.sql` once to create and populate the table. Before running, replace `your_database.your_schema` at the top of the file with your actual database and schema. The script uses `CREATE OR REPLACE` and is safe to re-run.
+
+Then reference it from your dbt project:
 
 ```yaml
 # dbt_project.yml
