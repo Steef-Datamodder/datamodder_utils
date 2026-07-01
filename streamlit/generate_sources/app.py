@@ -72,7 +72,7 @@ with st.sidebar:
     user     = st.text_input("User",     key="input_user")
     password = st.text_input("Password", key="input_password", type="password")
 
-    if st.button("Connect", use_container_width=True):
+    if st.button("Connect", width="stretch"):
         try:
             conn = snowflake.connector.connect(
                 account=account, user=user, password=password
@@ -213,26 +213,25 @@ with st.sidebar:
                       placeholder=r"c:\git\dbt\my_project")
 
         if _HAS_TK:
-            if st.button("Browse...", use_container_width=True):
+            if st.button("Browse...", width="stretch"):
                 _browse_folder()
                 st.rerun()
 
         dbt_path = st.session_state.get("input_dbt_path", "")
 
         if dbt_path and selected_schemas:
-            if st.button("Write files", type="primary", use_container_width=True):
+            if st.button("Write files", type="primary", width="stretch"):
                 st.session_state["do_write"] = True
 
 # ── Main area ──────────────────────────────────────────────────────────────────
 
-if "conn" not in st.session_state:
+conn = st.session_state.get("conn")
+if conn is None:
     st.info("Connect to Snowflake in the sidebar to get started.")
     st.stop()
 
 if not st.session_state.get("sel_database") or not selected_schemas:
     st.stop()
-
-conn = st.session_state["conn"]
 database = st.session_state["sel_database"]
 
 def query(sql: str) -> list:

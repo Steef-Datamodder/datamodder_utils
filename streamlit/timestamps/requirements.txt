@@ -1,0 +1,4 @@
+streamlit>=1.35
+snowflake-connector-python>=3.10
+keyring>=25.0
+pandas>=2.0
